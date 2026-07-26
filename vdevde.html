@@ -248,17 +248,33 @@
 
         <section class="panel" style="margin-top: 20px;">
             <h2>📚 المحتوى المنشور</h2>
+            <div class="hint" id="cloudHint">سيتم حفظ الفيديوهات في Firebase بعد إدخال بيانات مشروعك السحابي.</div>
             <div id="contentList" class="cards"></div>
         </section>
     </div>
 
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
     <script>
         const STORAGE_KEY = 'vdevde_media_items';
-        const DB_NAME = 'vdevde_media_db';
-        const DB_STORE = 'videos';
+        const CLOUD_COLLECTION = 'media_items';
+        const firebaseConfig = {
+            apiKey: 'AIzaSyBp7gZ7bbabIGrokehXeZH9OaNqs6-tEZY',
+            authDomain: 'medad-ezikr.firebaseapp.com',
+            projectId: 'medad-ezikr',
+            storageBucket: 'medad-ezikr.firebasestorage.app',
+            messagingSenderId: '235096064459',
+            appId: '1:235096064459:web:2e6bae4c2e8c604f14b64e',
+            measurementId: 'G-1L6L0X1RXX'
+        };
+
         let items = [];
         let activeLiveStream = null;
         let activeLiveItemId = null;
+        let db = null;
+        let storage = null;
+        let cloudReady = false;
 
         function escapeHtml(value) {
             return String(value)
@@ -269,86 +285,82 @@
                 .replace(/'/g, '&#39;');
         }
 
-        function openVideoDb() {
-            return new Promise((resolve, reject) => {
-                const request = indexedDB.open(DB_NAME, 1);
-                request.onupgradeneeded = () => {
-                    const db = request.result;
-                    if (!db.objectStoreNames.contains(DB_STORE)) {
-                        db.createObjectStore(DB_STORE, { keyPath: 'id' });
-                    }
-                };
-                request.onsuccess = () => resolve(request.result);
-                request.onerror = () => reject(request.error);
-            });
+        function isCloudConfigured() {
+            return !!(firebaseConfig.projectId && !firebaseConfig.projectId.includes('YOUR_'));
         }
 
-        function saveVideoToDb(id, file) {
-            return new Promise(async (resolve, reject) => {
-                try {
-                    const db = await openVideoDb();
-                    const tx = db.transaction(DB_STORE, 'readwrite');
-                    const store = tx.objectStore(DB_STORE);
-                    const request = store.put({ id, file });
-                    request.onsuccess = () => resolve();
-                    request.onerror = () => reject(request.error);
-                } catch (error) {
-                    reject(error);
-                }
-            });
+        function initCloudServices() {
+            if (!window.firebase || !isCloudConfigured()) {
+                return false;
+            }
+            firebase.initializeApp(firebaseConfig);
+            db = firebase.firestore();
+            storage = firebase.storage();
+            cloudReady = true;
+            return true;
         }
 
-        function getVideoFromDb(id) {
-            return new Promise(async (resolve, reject) => {
-                try {
-                    const db = await openVideoDb();
-                    const tx = db.transaction(DB_STORE, 'readonly');
-                    const store = tx.objectStore(DB_STORE);
-                    const request = store.get(id);
-                    request.onsuccess = () => resolve(request.result?.file || null);
-                    request.onerror = () => reject(request.error);
-                } catch (error) {
-                    reject(error);
-                }
-            });
+        function updateCloudHint() {
+            const hint = document.getElementById('cloudHint');
+            if (!hint) return;
+            hint.textContent = cloudReady
+                ? '✅ الفيديوهات تحفظ الآن في Firebase وتظهر للجميع بعد الرفع.'
+                : '⚠️ أدخل بيانات مشروع Firebase داخل الكود لتفعيل الحفظ السحابي.';
         }
 
-        function deleteVideoFromDb(id) {
-            return new Promise(async (resolve, reject) => {
-                try {
-                    const db = await openVideoDb();
-                    const tx = db.transaction(DB_STORE, 'readwrite');
-                    const store = tx.objectStore(DB_STORE);
-                    const request = store.delete(id);
-                    request.onsuccess = () => resolve();
-                    request.onerror = () => reject(request.error);
-                } catch (error) {
-                    reject(error);
-                }
-            });
+        function saveItemsLocally() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+        }
+
+        async function syncItemToCloud(item) {
+            if (!cloudReady || !db) return;
+            try {
+                await db.collection(CLOUD_COLLECTION).doc(item.id).set({
+                    ...item,
+                    updatedAtMs: Date.now()
+                });
+            } catch (error) {
+                console.error('فشل مزامنة العنصر مع Firebase:', error);
+            }
+        }
+
+        async function deleteItemFromCloud(itemId) {
+            if (!cloudReady || !db) return;
+            try {
+                await db.collection(CLOUD_COLLECTION).doc(itemId).delete();
+            } catch (error) {
+                console.error('فشل حذف العنصر من Firebase:', error);
+            }
+        }
+
+        async function uploadVideoToCloud(itemId, file) {
+            if (!cloudReady || !storage) {
+                throw new Error('Firebase غير مكوّن');
+            }
+            const storagePath = `${CLOUD_COLLECTION}/${itemId}/${file.name}`;
+            const storageRef = storage.ref(storagePath);
+            await storageRef.put(file);
+            return storageRef.getDownloadURL();
         }
 
         async function loadItems() {
-            const raw = localStorage.getItem(STORAGE_KEY);
-            items = raw ? JSON.parse(raw) : [];
-            for (const item of items.filter(item => item.type === 'video' && item.videoKey && !item.videoUrl)) {
+            if (cloudReady) {
                 try {
-                    const file = await getVideoFromDb(item.videoKey);
-                    if (file) {
-                        if (item.videoUrl && item.videoUrl.startsWith('blob:')) {
-                            URL.revokeObjectURL(item.videoUrl);
-                        }
-                        item.videoUrl = URL.createObjectURL(file);
-                    }
+                    const snapshot = await db.collection(CLOUD_COLLECTION).orderBy('createdAtMs', 'desc').get();
+                    items = snapshot.docs.map(doc => ({
+                        ...doc.data(),
+                        id: doc.id
+                    }));
+                    renderItems();
+                    return;
                 } catch (error) {
-                    console.error('فشل استرجاع الفيديو:', error);
+                    console.error('فشل تحميل العناصر من Firebase:', error);
                 }
             }
-            renderItems();
-        }
 
-        function saveItems() {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+            const raw = localStorage.getItem(STORAGE_KEY);
+            items = raw ? JSON.parse(raw) : [];
+            renderItems();
         }
 
         function createItem(type, payload) {
@@ -358,12 +370,16 @@
                 title: payload.title,
                 description: payload.description || '',
                 createdAt: new Date().toLocaleString('ar-EG'),
+                createdAtMs: Date.now(),
                 comments: [],
                 ...payload
             };
             items.unshift(item);
-            saveItems();
+            saveItemsLocally();
             renderItems();
+            if (cloudReady) {
+                syncItemToCloud(item);
+            }
             return item;
         }
 
@@ -389,7 +405,10 @@
                 liveItem.endedAt = new Date().toLocaleString('ar-EG');
                 liveItem.saved = true;
                 liveItem.status = 'تم حفظ البث بعد الانتهاء';
-                saveItems();
+                saveItemsLocally();
+                if (cloudReady) {
+                    syncItemToCloud(liveItem);
+                }
                 renderItems();
             }
             alert('تم إنهاء البث المباشر وحفظه بنجاح');
@@ -410,11 +429,18 @@
             if (item && item.videoUrl && item.videoUrl.startsWith('blob:')) {
                 URL.revokeObjectURL(item.videoUrl);
             }
-            if (item && item.videoKey) {
-                await deleteVideoFromDb(item.videoKey);
+            if (item && item.videoPath && cloudReady && storage) {
+                try {
+                    await storage.ref(item.videoPath).delete();
+                } catch (error) {
+                    console.error('فشل حذف الفيديو من Firebase Storage:', error);
+                }
+            }
+            if (cloudReady) {
+                await deleteItemFromCloud(itemId);
             }
             items = items.filter(entry => entry.id !== itemId);
-            saveItems();
+            saveItemsLocally();
             renderItems();
             alert('تم الحذف بنجاح');
         }
@@ -484,21 +510,27 @@
             const description = document.getElementById('videoDesc').value.trim();
             const file = document.getElementById('videoFile').files[0];
             if (!title || !file) return;
-            const videoKey = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-            await saveVideoToDb(videoKey, file);
-            const videoUrl = URL.createObjectURL(file);
-            createItem('video', {
-                title,
-                description,
-                fileName: file.name,
-                videoKey,
-                videoUrl
-            });
-            e.target.reset();
-            alert('تم رفع الفيديو بنجاح');
+            const itemId = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+            try {
+                const videoUrl = await uploadVideoToCloud(itemId, file);
+                const item = createItem('video', {
+                    title,
+                    description,
+                    fileName: file.name,
+                    videoKey: itemId,
+                    videoUrl,
+                    videoPath: `${CLOUD_COLLECTION}/${itemId}/${file.name}`
+                });
+                await syncItemToCloud(item);
+                e.target.reset();
+                alert('تم رفع الفيديو بنجاح وحفظه سحابياً');
+            } catch (error) {
+                console.error(error);
+                alert('تعذر رفع الفيديو إلى السحابة، تأكد من إعداد Firebase أولاً.');
+            }
         });
 
-        document.addEventListener('submit', function (e) {
+        document.addEventListener('submit', async function (e) {
             if (!e.target.classList.contains('comment-form')) return;
             e.preventDefault();
             const form = e.target;
@@ -513,8 +545,11 @@
                 text,
                 createdAt: new Date().toLocaleString('ar-EG')
             });
-            saveItems();
+            saveItemsLocally();
             renderItems();
+            if (cloudReady) {
+                await syncItemToCloud(item);
+            }
         });
 
         function attachLivePreview() {
@@ -572,6 +607,8 @@
             }).join('');
         }
 
+        cloudReady = initCloudServices();
+        updateCloudHint();
         loadItems();
         attachLivePreview();
     </script>
