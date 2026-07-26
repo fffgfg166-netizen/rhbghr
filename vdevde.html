@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>بث مباشر ورفع فيديوهات</title>
+    <style>
+        :root {
+            color-scheme: light;
+            --bg: #f7f9fc;
+            --card: #ffffff;
+            --text: #1f2937;
+            --muted: #6b7280;
+            --accent: #0f766e;
+            --accent-2: #f59e0b;
+            --border: #dbe7ee;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: 'Tajawal', 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #eefcf8 0%, #f8fafc 100%);
+            color: var(--text);
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 24px 16px 48px;
+        }
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+        .topbar h1 {
+            margin: 0;
+            font-size: 28px;
+            color: var(--accent);
+        }
+        .topbar a {
+            text-decoration: none;
+            background: var(--accent);
+            color: white;
+            padding: 10px 14px;
+            border-radius: 999px;
+            font-weight: 700;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .panel {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+        }
+        .panel h2 {
+            margin-top: 0;
+            color: var(--accent);
+            font-size: 22px;
+        }
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        input, textarea, button, select {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            font-size: 15px;
+            margin-top: 6px;
+            font-family: inherit;
+        }
+        textarea { min-height: 90px; resize: vertical; }
+        button {
+            cursor: pointer;
+            background: var(--accent);
+            color: white;
+            border: none;
+            font-weight: 700;
+            transition: transform 0.2s ease;
+        }
+        button:hover { transform: translateY(-1px); }
+        .pill {
+            display: inline-block;
+            background: #ecfeff;
+            color: #0f766e;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .cards {
+            display: grid;
+            gap: 16px;
+            margin-top: 20px;
+        }
+        .card {
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 16px;
+            background: #fcfeff;
+        }
+        .card video {
+            width: 100%;
+            border-radius: 12px;
+            margin-top: 10px;
+            background: #000;
+            max-height: 320px;
+            object-fit: contain;
+        }
+        .video-frame {
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        .card .meta {
+            color: var(--muted);
+            font-size: 13px;
+            margin: 6px 0 10px;
+        }
+        .comments {
+            margin-top: 12px;
+            padding-top: 10px;
+            border-top: 1px solid var(--border);
+        }
+        .comment-item {
+            background: #f8fafc;
+            border-radius: 10px;
+            padding: 8px 10px;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        .comment-form {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+        .comment-form input {
+            flex: 1 1 180px;
+            margin-top: 0;
+        }
+        .comment-form button {
+            flex: 0 0 auto;
+            width: auto;
+            padding: 10px 14px;
+        }
+        .empty {
+            padding: 16px;
+            background: #f8fafc;
+            border: 1px dashed var(--border);
+            border-radius: 12px;
+            color: var(--muted);
+        }
+        .hint {
+            margin-top: 6px;
+            font-size: 13px;
+            color: var(--muted);
+            background: #f8fafc;
+            border: 1px dashed var(--border);
+            padding: 10px 12px;
+            border-radius: 10px;
+            line-height: 1.6;
+        }
+        .live-preview {
+            width: 100%;
+            border-radius: 12px;
+            background: #000;
+            margin-top: 10px;
+            min-height: 220px;
+            object-fit: cover;
+        }
+        .stop-live-btn {
+            margin-top: 10px;
+            background: #dc2626;
+            color: white;
+        }
+        .delete-btn {
+            margin-top: 10px;
+            background: #b91c1c;
+            color: white;
+        }
+        .owner-pass-box {
+            display: none;
+            margin-top: 10px;
+            padding: 10px;
+            border: 1px solid #fecaca;
+            background: #fff1f2;
+            border-radius: 10px;
+        }
+        .owner-pass-box input {
+            margin-top: 8px;
+        }
+        @media (max-width: 900px) {
+            .grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="topbar">
+            <h1>📺 البث المباشر ورفع الفيديوهات</h1>
+            <a href="index.html">العودة إلى الصفحة الرئيسية</a>
+        </div>
+
+        <div class="grid">
+            <section class="panel">
+                <h2>➕ إنشاء بث مباشر جديد</h2>
+                <form id="liveForm">
+                    <label>عنوان البث
+                        <input id="liveTitle" type="text" placeholder="مثال: درس مباشر عن السيرة" required>
+                    </label>
+                    <label>الوصف
+                        <textarea id="liveDesc" placeholder="اكتب وصفاً مختصراً للبث..."></textarea>
+                    </label>
+                    <div class="hint">لا حاجة لإدخال رابط خارجي، عند الضغط على الزر سيتم تشغيل البث المباشر مباشرة من كاميرا الجهاز ومكبر الصوت.</div>
+                    <button type="submit">ابدأ البث المباشر</button>
+                </form>
+            </section>
+
+            <section class="panel">
+                <h2>🎬 رفع فيديو جديد</h2>
+                <form id="videoForm">
+                    <label>عنوان الفيديو
+                        <input id="videoTitle" type="text" placeholder="مثال: فيديو تعليمي" required>
+                    </label>
+                    <label>الوصف
+                        <textarea id="videoDesc" placeholder="اكتب وصف الفيديو..."></textarea>
+                    </label>
+                    <label>اختر ملف فيديو
+                        <input id="videoFile" type="file" accept="video/*" required>
+                    </label>
+                    <button type="submit">رفع الفيديو</button>
+                </form>
+            </section>
+        </div>
+
+        <section class="panel" style="margin-top: 20px;">
+            <h2>📚 المحتوى المنشور</h2>
+            <div id="contentList" class="cards"></div>
+        </section>
+    </div>
+
+    <script>
+        const STORAGE_KEY = 'vdevde_media_items';
+        const DB_NAME = 'vdevde_media_db';
+        const DB_STORE = 'videos';
+        let items = [];
+        let activeLiveStream = null;
+        let activeLiveItemId = null;
+
+        function escapeHtml(value) {
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function openVideoDb() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, 1);
+                request.onupgradeneeded = () => {
+                    const db = request.result;
+                    if (!db.objectStoreNames.contains(DB_STORE)) {
+                        db.createObjectStore(DB_STORE, { keyPath: 'id' });
+                    }
+                };
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        function saveVideoToDb(id, file) {
+            return new Promise(async (resolve, reject) => {
+                try {
+                    const db = await openVideoDb();
+                    const tx = db.transaction(DB_STORE, 'readwrite');
+                    const store = tx.objectStore(DB_STORE);
+                    const request = store.put({ id, file });
+                    request.onsuccess = () => resolve();
+                    request.onerror = () => reject(request.error);
+                } catch (error) {
+                    reject(error);
+                }
+            });
+        }
+
+        function getVideoFromDb(id) {
+            return new Promise(async (resolve, reject) => {
+                try {
+                    const db = await openVideoDb();
+                    const tx = db.transaction(DB_STORE, 'readonly');
+                    const store = tx.objectStore(DB_STORE);
+                    const request = store.get(id);
+                    request.onsuccess = () => resolve(request.result?.file || null);
+                    request.onerror = () => reject(request.error);
+                } catch (error) {
+                    reject(error);
+                }
+            });
+        }
+
+        function deleteVideoFromDb(id) {
+            return new Promise(async (resolve, reject) => {
+                try {
+                    const db = await openVideoDb();
+                    const tx = db.transaction(DB_STORE, 'readwrite');
+                    const store = tx.objectStore(DB_STORE);
+                    const request = store.delete(id);
+                    request.onsuccess = () => resolve();
+                    request.onerror = () => reject(request.error);
+                } catch (error) {
+                    reject(error);
+                }
+            });
+        }
+
+        async function loadItems() {
+            const raw = localStorage.getItem(STORAGE_KEY);
+            items = raw ? JSON.parse(raw) : [];
+            for (const item of items.filter(item => item.type === 'video' && item.videoKey && !item.videoUrl)) {
+                try {
+                    const file = await getVideoFromDb(item.videoKey);
+                    if (file) {
+                        if (item.videoUrl && item.videoUrl.startsWith('blob:')) {
+                            URL.revokeObjectURL(item.videoUrl);
+                        }
+                        item.videoUrl = URL.createObjectURL(file);
+                    }
+                } catch (error) {
+                    console.error('فشل استرجاع الفيديو:', error);
+                }
+            }
+            renderItems();
+        }
+
+        function saveItems() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+        }
+
+        function createItem(type, payload) {
+            const item = {
+                id: Date.now().toString(36) + Math.random().toString(36).slice(2),
+                type,
+                title: payload.title,
+                description: payload.description || '',
+                createdAt: new Date().toLocaleString('ar-EG'),
+                comments: [],
+                ...payload
+            };
+            items.unshift(item);
+            saveItems();
+            renderItems();
+            return item;
+        }
+
+        function requireOwnerPassword(actionName) {
+            const entered = prompt(`أدخل كلمة السر لل${actionName}:`);
+            return entered === '3092004';
+        }
+
+        function stopLiveBroadcast() {
+            if (!requireOwnerPassword('إنهاء البث')) {
+                alert('كلمة السر غير صحيحة');
+                return;
+            }
+            if (activeLiveStream) {
+                activeLiveStream.getTracks().forEach(track => track.stop());
+            }
+            activeLiveStream = null;
+            activeLiveItemId = null;
+
+            const liveItem = items.find(item => item.type === 'live' && item.streamActive);
+            if (liveItem) {
+                liveItem.streamActive = false;
+                liveItem.endedAt = new Date().toLocaleString('ar-EG');
+                liveItem.saved = true;
+                liveItem.status = 'تم حفظ البث بعد الانتهاء';
+                saveItems();
+                renderItems();
+            }
+            alert('تم إنهاء البث المباشر وحفظه بنجاح');
+        }
+
+        function askOwnerDelete(itemId) {
+            if (!requireOwnerPassword('الحذف')) {
+                alert('كلمة السر غير صحيحة');
+                return;
+            }
+            deleteItem(itemId);
+        }
+
+        async function deleteItem(itemId) {
+            const confirmed = confirm('هل تريد حذف هذا الفيديو/البث فعلاً؟');
+            if (!confirmed) return;
+            const item = items.find(entry => entry.id === itemId);
+            if (item && item.videoUrl && item.videoUrl.startsWith('blob:')) {
+                URL.revokeObjectURL(item.videoUrl);
+            }
+            if (item && item.videoKey) {
+                await deleteVideoFromDb(item.videoKey);
+            }
+            items = items.filter(entry => entry.id !== itemId);
+            saveItems();
+            renderItems();
+            alert('تم الحذف بنجاح');
+        }
+
+        async function startLiveBroadcast(title, description) {
+            if (!requireOwnerPassword('بدء البث')) {
+                alert('كلمة السر غير صحيحة');
+                return;
+            }
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                alert('المتصفح لا يدعم تشغيل الكاميرا مباشرة هنا.');
+                return;
+            }
+
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                activeLiveStream = stream;
+                const item = createItem('live', {
+                    title,
+                    description,
+                    streamActive: true,
+                    streamStartedAt: new Date().toLocaleString('ar-EG'),
+                    saved: false,
+                    status: 'البث جاري الآن'
+                });
+                activeLiveItemId = item.id;
+                setTimeout(() => {
+                    const video = document.querySelector(`[data-live-video="${item.id}"]`);
+                    if (video) {
+                        video.srcObject = stream;
+                        video.play().catch(() => {});
+                    }
+                }, 100);
+                alert('تم بدء البث المباشر بنجاح');
+            } catch (error) {
+                console.error(error);
+                alert('تعذر تشغيل الكاميرا أو الميكروفون، يرجى السماح بالإذن ثم المحاولة مرة أخرى.');
+            }
+        }
+
+        document.getElementById('liveForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const title = document.getElementById('liveTitle').value.trim();
+            const description = document.getElementById('liveDesc').value.trim();
+            if (!title) return;
+            await startLiveBroadcast(title, description);
+            e.target.reset();
+        });
+
+        document.addEventListener('click', function (e) {
+            if (e.target.classList.contains('stop-live-btn')) {
+                stopLiveBroadcast();
+            }
+            if (e.target.classList.contains('delete-btn')) {
+                const itemId = e.target.dataset.itemId;
+                askOwnerDelete(itemId);
+            }
+        });
+
+        document.getElementById('videoForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            if (!requireOwnerPassword('الرفع')) {
+                alert('كلمة السر غير صحيحة');
+                return;
+            }
+            const title = document.getElementById('videoTitle').value.trim();
+            const description = document.getElementById('videoDesc').value.trim();
+            const file = document.getElementById('videoFile').files[0];
+            if (!title || !file) return;
+            const videoKey = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+            await saveVideoToDb(videoKey, file);
+            const videoUrl = URL.createObjectURL(file);
+            createItem('video', {
+                title,
+                description,
+                fileName: file.name,
+                videoKey,
+                videoUrl
+            });
+            e.target.reset();
+            alert('تم رفع الفيديو بنجاح');
+        });
+
+        document.addEventListener('submit', function (e) {
+            if (!e.target.classList.contains('comment-form')) return;
+            e.preventDefault();
+            const form = e.target;
+            const itemId = form.dataset.itemId;
+            const author = form.querySelector('input[name="commentAuthor"]').value.trim() || 'زائر';
+            const text = form.querySelector('input[name="commentText"]').value.trim();
+            if (!text) return;
+            const item = items.find(x => x.id === itemId);
+            if (!item) return;
+            item.comments.push({
+                author,
+                text,
+                createdAt: new Date().toLocaleString('ar-EG')
+            });
+            saveItems();
+            renderItems();
+        });
+
+        function attachLivePreview() {
+            if (!activeLiveStream || !activeLiveItemId) return;
+            const video = document.querySelector(`[data-live-video="${activeLiveItemId}"]`);
+            if (video && video.srcObject !== activeLiveStream) {
+                video.srcObject = activeLiveStream;
+                video.play().catch(() => {});
+            }
+        }
+
+        function renderItems() {
+            const list = document.getElementById('contentList');
+            if (!items.length) {
+                list.innerHTML = '<div class="empty">لا توجد عناصر منشورة بعد. ابدأ بإنشاء بث أو رفع فيديو.</div>';
+                return;
+            }
+
+            list.innerHTML = items.map(item => {
+                const commentsHtml = (item.comments || []).map(comment => `
+                    <div class="comment-item">
+                        <strong>${escapeHtml(comment.author)}</strong> · ${escapeHtml(comment.createdAt)}<br>
+                        ${escapeHtml(comment.text)}
+                    </div>
+                `).join('');
+
+                return `
+                    <article class="card">
+                        <span class="pill">${item.type === 'live' ? 'بث مباشر' : 'فيديو'}</span>
+                        <h3>${escapeHtml(item.title)}</h3>
+                        <div class="meta">${escapeHtml(item.description || 'لا يوجد وصف')}</div>
+                        <div class="meta">تم الإنشاء: ${escapeHtml(item.createdAt)}</div>
+                        ${item.type === 'live' ? `
+                            <div class="meta">${escapeHtml(item.status || 'البث مباشر الآن من كاميرا الجهاز')}</div>
+                            ${item.streamActive ? `<video class="live-preview" data-live-video="${item.id}" autoplay playsinline muted></video>` : '<div class="empty">الانتظار لبدء البث...</div>'}
+                            ${item.streamActive ? '<button type="button" class="stop-live-btn">إنهاء البث المباشر</button>' : ''}
+                        ` : `
+                            <div class="video-frame">
+                                <video controls preload="metadata" playsinline src="${escapeHtml(item.videoUrl || '')}"></video>
+                            </div>
+                            <div class="meta">الملف: ${escapeHtml(item.fileName || 'ملف مرفوع')}</div>
+                        `}
+                        <button type="button" class="delete-btn" data-item-id="${item.id}">🗑️ حذف</button>
+                        <div class="comments">
+                            <h4>التعليقات</h4>
+                            ${commentsHtml || '<div class="empty">لا توجد تعليقات بعد.</div>'}
+                            <form class="comment-form" data-item-id="${item.id}">
+                                <input name="commentAuthor" type="text" placeholder="اسمك">
+                                <input name="commentText" type="text" placeholder="اكتب تعليقاً...">
+                                <button type="submit">إضافة تعليق</button>
+                            </form>
+                        </div>
+                    </article>
+                `;
+            }).join('');
+        }
+
+        loadItems();
+        attachLivePreview();
+    </script>
+</body>
+</html>
