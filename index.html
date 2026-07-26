@@ -112,8 +112,8 @@
             const nameInput = document.getElementById('user-name-input');
             const questionText = input.value.trim();
             const userName = nameInput.value.trim() || "زائر مجهول";
-            
-            if(!questionText) return alert("من فضلك اكتب سؤالك أولاً!");
+
+            if (!questionText) return alert("من فضلك اكتب سؤالك أولاً!");
 
             try {
                 await addDoc(collection(db, "questions"), {
@@ -131,53 +131,7 @@
                 console.error("خطأ في الإرسال:", error);
                 alert("حدث خطأ في النظام.");
             }
-                },
-                {
-                    title: "العصر الأندلسي والمرابطون/الموحدون",
-                    desc: "يمثل هذا العصر قمة الحضارة الإسلامية في الغرب، حيث ازدهرت المدن كالقرطبة وغرناطة وظهرت مدارس فكرية وعلمية وفنية متقدمة أثرت أوروبا فيما بعد.",
-                    capital: "قرطبة، غرناطة، إشبيلية",
-                    leaders: "عبد الرحمن الداخل، يوسف بن تاشفين، ابن تاشفين، أبو يحيى الموحدي، السلطان المنصور",
-                    monuments: "مسجد قرطبة الكبير، قصر الحمراء، نظام السدود والري المتقدم بالأندلس.",
-                    muslims: "يركز المؤرخون المسلمون على براعة الأندلسيين في الجمع بين التراث الإسلامي والأندلسي المحلي، وإسهاماتهم في الطب والفلسفة والعلوم التطبيقية.",
-                    orientalists: "يشيد المستشرقون بإسهامات الأندلسيين في نقل المعرفة إلى أوروبا، وتطوير الموسيقى والهندسة المعمارية، مع دراسة علاقات التعايش بين الأديان في المجتمع الأندلسي."
-                },
-                {
-                    title: "الدولة الفاطمية والشيعية السياسية",
-                    desc: "امتد نفوذ الدولة الفاطمية في شمال أفريقيا ومصر وامتاز بعصر ذهبي من العمران والثقافة الشيعية الإسماعيلية، وأنشأوا مؤسسات دعوية وحضارية بارزة.",
-                    capital: "المهدية (تونس) ثم القاهرة",
-                    leaders: "المهدي لأهل البيت، الحاكم بأمر الله، العزيز بالله",
-                    monuments: "الفسطاط والقاهرة الفاطمية، وتأسيس دور علمية ودعوية واسعة، وبيت المال المنظم.",
-                    muslims: "تتناول الكتب الإسلامية هذا العصر معتبرة إسهام الفاطميين في نشر علوم الإدارة والاقتصاد رغم الجدل المذهبي بينهم وبين باقي الفرق.",
-                    orientalists: "يدرس المستشرقون الفاطميين من زاويةطهظ التاريخ التجاري في البحر المتوسط وسياساتهم البحرية والمالية، مع اهتمام بالمصادر الأرشيفية في القاهرة الفاطمية."
-                },
-                {
-                    title: "العصر الصفوي والتغيرات المذهبية",
-                    desc: "العصر الصفوي مثّل نقطة تحول كبيرة في إيران وشمال شرق العالم الإسلامي حيث تم تبني التشيع الإثني عشري ديناً رسمياً مع آثار جيوسياسية ودينية بعيدة المدى.",
-                    capital: "أصفهان ثم طهران لاحقاً",
-                    leaders: "أقرت شاه إسماعيل الأول، شاه عباس الكبير",
-                    monuments: "مساجد وأعمال فنون إيرانية مزخرفة، وتطوير بنية المدن والقصور، ونهوض الأدب الفارسي.",
-                    muslims: "ينظر مؤرخو المسلمين إلى الصفويين كقوة أعادت تشكيل البنية المذهبية في إيران، مع تأثيراتها الثقافية العميقة.",
-                    orientalists: "يهتم الباحثون الغربيون بدراسة تحول الهوية الإيرانية ودور الصفويين في الصدام مع الإمبراطوريات المجاورة وتأثير ذلك على الجغرافيا السياسية للمنطقة."
-                },
-                {
-                    title: "عصر النهضة والإصلاح الإسلامي الحديث",
-                    desc: "بدأ منذ القرن 18-19 مع تفاعل المسلمين مع الحداثة والغرب، وظهرت حركات إصلاحية علمية واجتماعية وسياسية هدفت لمواجهة تحديات الاستعمار وإعادة البناء.",
-                    capital: "مختلف المراكز: القاهرة، إسطنبول، مكة والجزائر",
-                    leaders: "محمد علي باشا، جمال الدين الأفغاني، محمد عبده، عبدالحميد الثاني (بما في بعض إصلاحاته)",
-                    monuments: "مؤسسات التعليم الحديث، المدارس الحربية، إصلاحات إدارية ومدنية، طباعة الصحف والكتب بنطاق واسع.",
-                    muslims: "يحلل المؤرخون المسلمون جهود التجديد هذه باعتبارها رد فعل عقلاني للوقوف في وجه الاستعمار ومحاولة استرداد القوة العلمية والسياسية.",
-                    orientalists: "يرى الباحثون أن حركات الإصلاح ساهمت في تأسيس دول ومؤسسات حديثة وعملت على نقل معارف الإدارة الغربية ضمن إطار محلي."
-                },
-                {
-                    title: "العصر الحديث: الاحتلال، المقاومة والاستقلال",
-                    desc: "يتناول هذا العصر فترة تداخل القوى الاستعمارية في العالم الإسلامي، حركات المقاومة الوطنية، وصولاً إلى الاستقلال وبناء الدول الحديثة في القرن العشرين.",
-                    capital: "عواصم متعددة: القاهرة، الرباط، بغداد، دمشق، الرياض",
-                    leaders: "قادة وطنيون محليون وحركات تحريرية متعددة عبر البلاد الإسلامية",
-                    monuments: "بروز مؤسسات الدولة الحديثة، شبكات النقل والسكك الحديدية، مبان حكومية ومعاهد علوم.",
-                    muslims: "يركز المؤرخون المسلمون على الصراع بين الإرث الإسلامي الحديث ومحاولات بناء مؤسسات مدنية مستقلة ذات سيادة.",
-                    orientalists: "ينظر المستشرقون وعلماء السياسة إلى هذا العصر كمرحلة انتقالية أساسية لإعادة ترتيب الشرق الأوسط وشمال أفريقيا وبلوغ الدولة القومية الحديثة."
-                }
-        
+        };
 
         window.submitReply = async function(id) {
             const input = document.getElementById(`reply-input-${id}`);
@@ -254,6 +208,16 @@
             });
             if (typeof window.renderArticles === 'function') window.renderArticles();
             if (typeof window.renderDevArticles === 'function') window.renderDevArticles();
+        });
+
+        // الاستماع اللحظي للفيديوهات المشتركة
+        const qVideos = query(collection(db, "media_items"), orderBy("createdAtMs", "desc"));
+        onSnapshot(qVideos, (snapshot) => {
+            window.allFirebaseVideos = [];
+            snapshot.forEach((doc) => {
+                window.allFirebaseVideos.push({ id: doc.id, ...doc.data() });
+            });
+            if (typeof window.renderSharedVideos === 'function') window.renderSharedVideos();
         });
     </script>
 </head>
@@ -360,6 +324,14 @@
             </div>
         </div>
     </div>
+
+    <section class="container mx-auto px-4 py-8">
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-emerald-100 mb-6">
+            <h2 class="text-2xl font-bold text-emerald-900 mb-2">🎬 الفيديوهات المنشورة</h2>
+            <p class="text-slate-600 text-sm">تظهر هنا الفيديوهات التي يتم رفعها من صفحة البث المباشر وتتاح للجميع.</p>
+        </div>
+        <div id="shared-videos-wrapper" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+    </section>
 
     <!-- قسم القرآن الكريم -->
     <main id="quran-section" class="container mx-auto px-4 py-8">
@@ -603,12 +575,45 @@
 <script>
     window.allFirebaseQuestions = [];
     window.allFirebaseArticles = [];
+    window.allFirebaseVideos = [];
     window.currentEraIndex = 0;
     let historyLoaded = false;
     let worldNewsLoaded = false;
     let currentQuestionsList = [];
     let currentQuestionIdx = 0;
     let userScore = 0;
+
+    function escapeHtml(value) {
+        return String(value)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    window.renderSharedVideos = function() {
+        const wrapper = document.getElementById('shared-videos-wrapper');
+        if (!wrapper) return;
+
+        const videos = (window.allFirebaseVideos || []).filter(item => item.type === 'video' && item.videoUrl);
+
+        if (!videos.length) {
+            wrapper.innerHTML = '<div class="text-center py-8 col-span-full text-slate-400 text-sm">لا توجد فيديوهات منشورة بعد.</div>';
+            return;
+        }
+
+        wrapper.innerHTML = videos.map(item => `
+            <div class="bg-white rounded-2xl border border-emerald-100 shadow-sm overflow-hidden">
+                <div class="p-4 border-b border-emerald-100">
+                    <h3 class="font-bold text-emerald-900">${escapeHtml(item.title || 'فيديو جديد')}</h3>
+                    <p class="text-sm text-slate-600 mt-1">${escapeHtml(item.description || 'لا يوجد وصف')}</p>
+                </div>
+                <video controls playsinline preload="metadata" class="w-full h-64 object-cover bg-black" src="${escapeHtml(item.videoUrl)}"></video>
+                <div class="p-4 text-xs text-slate-500">${escapeHtml(item.fileName || '')}</div>
+            </div>
+        `).join('');
+    };
 
     const quizDatabase = {
         quran: [
